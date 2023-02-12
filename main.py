@@ -116,11 +116,11 @@ def main(args):
     if args.download:
         remove_directory(SDK_DEFAULT_PATH)
 
-    if not args.output:
+    if (not args.output) and args.files:
         args.output = '.'.join(args.files[0].split("/")[-1].split(".")[:-1])
 
     res = download_sdk_if_needed(args.channel)
-    if type(res) is not tuple:
+    if type(res) is not tuple and not args.no_updates:
         res = update_sdk_if_needed()
 
     if not args.files:
