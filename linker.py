@@ -18,9 +18,13 @@ class Linker:
         self.__path = None
         self.found = False
 
-        if linker and shutil.which(linker):
-            log.success("Using linker:", linker)
-            self.found = True
+        if linker:
+            if shutil.which(linker):
+                log.success("Using linker:", linker)
+                self.found = True
+                self.__path = shutil.which(linker)
+            else:
+                log.error(f"Linker {linker} was not found!")
         else:
             for i in self.__supported:
                 if shutil.which(i):

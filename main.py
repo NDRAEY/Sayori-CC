@@ -86,7 +86,11 @@ def compile_c(inputs, output, compiler=None, linker=None):
         ldflags = ldflags.strip()
     
     c = CCompiler(compiler)
+    if not c.found:
+        exit(1)
     ld = Linker(linker)
+    if not ld.found:
+        exit(1)
     cwd = os.getcwd()
 
     objs = [cwd+"/"+i+".o" for i in inputs]
@@ -126,7 +130,7 @@ def main(args):
     if not args.files:
         exit(0)
 
-    compile_c(args.files, args.output)
+    compile_c(args.files, args.output, args.compiler, args.linker)
 
 if __name__=="__main__":
     log.success(f"SayoriSDK Compiler Wrapper v{VERSION} by NDRAEY (c) 2023")
@@ -134,6 +138,7 @@ if __name__=="__main__":
     argp = argparse.ArgumentParser(prog='sayori-cc')
     argp.add_argument("-c", "--channel", help="Select SayoriSDK channel")
     argp.add_argument("-p", "--compiler", help="Select compiler to use for this session")
+    argp.add_argument("-l", "--linker", help="Select linker to use for this session")
     argp.add_argument("-o", "--output", help="Output to file")
     argp.add_argument("-d", "--download", action='store_true',
                       help='''Force download SayoriSDK
