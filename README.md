@@ -8,3 +8,10 @@ This is a wrapper for building programs for SayoriOS that allows compile program
 
 In the end you will get executable that you can copy
 to SayoriOS' initrd and run SayoriOS!
+
+# Usage
+
+Just run command to compile a file:
+```bash
+sayorios-cc myfile.c -o program.elf
+```
