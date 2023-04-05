@@ -7,8 +7,12 @@ import subprocess as sp
 from colorama import Fore
 
 # internal
-from git_utils import GIT
-import colored_out as log
+try:
+    from git_utils import GIT
+    import colored_out as log
+except:
+    from .git_utils import GIT
+    from . import colored_out as log
 
 class CCompiler:
     def __init__(self, compiler=None):

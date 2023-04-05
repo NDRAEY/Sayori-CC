@@ -1,10 +1,16 @@
 # Code by NDRAEY (c) 2023
 
-from c_compiler import CCompiler, GIT, log, argparse, shutil
-from linker import Linker
-import key_value_parser as kvp
 import os
 from pathlib import Path
+
+try:
+    from c_compiler import CCompiler, GIT, log, argparse, shutil
+    from linker import Linker
+    import key_value_parser as kvp
+except:
+    from .c_compiler import CCompiler, GIT, log, argparse, shutil
+    from .linker import Linker
+    from . import key_value_parser as kvp
 
 VERSION = "1.0"
 
@@ -132,7 +138,7 @@ def main(args):
 
     compile_c(args.files, args.output, args.compiler, args.linker)
 
-if __name__=="__main__":
+def premain():
     log.success(f"SayoriSDK Compiler Wrapper v{VERSION} by NDRAEY (c) 2023")
 
     argp = argparse.ArgumentParser(prog='sayori-cc')
@@ -154,3 +160,6 @@ if __name__=="__main__":
     args = argp.parse_args()
 
     main(args)
+
+if __name__=="__main__":
+    premain()

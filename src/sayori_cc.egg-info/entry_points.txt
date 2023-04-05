@@ -1,0 +1,2 @@
+[console_scripts]
+sayori-cc = sayori_cc.main:premain

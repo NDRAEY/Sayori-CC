@@ -1,10 +1,14 @@
 # Code by NDRAEY (c) 2023
 
-import colored_out as log
 import subprocess as sp
 import shutil
 import os
 from colorama import Fore
+
+try:
+    import colored_out as log
+except:
+    from . import colored_out as log
 
 class Linker:
     def __init__(self, linker=None):

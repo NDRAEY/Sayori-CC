@@ -1,0 +1,15 @@
+LICENSE
+README.md
+setup.py
+src/sayori_cc/__init__.py
+src/sayori_cc/c_compiler.py
+src/sayori_cc/colored_out.py
+src/sayori_cc/git_utils.py
+src/sayori_cc/key_value_parser.py
+src/sayori_cc/linker.py
+src/sayori_cc/main.py
+src/sayori_cc.egg-info/PKG-INFO
+src/sayori_cc.egg-info/SOURCES.txt
+src/sayori_cc.egg-info/dependency_links.txt
+src/sayori_cc.egg-info/entry_points.txt
+src/sayori_cc.egg-info/top_level.txt
