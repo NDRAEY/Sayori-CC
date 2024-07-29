@@ -38,7 +38,7 @@ class Linker:
                     break
 
             if not self.found:
-                log.error("Not suitable linker was found!")
+                log.error("No suitable linker was found!")
                 log.info("Tried:")
                 for i in self.__supported:
                     log.info("^-", i)

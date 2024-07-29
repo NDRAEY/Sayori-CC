@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+import subprocess as sp
 
 try:
     from c_compiler import CCompiler, GIT, log, argparse, shutil
@@ -16,8 +17,8 @@ VERSION = "1.0"
 
 HOME_PATH        = str(Path.home())
 SDK_DEFAULT_PATH = HOME_PATH+"/.SayoriSDK/"
-SDK_C_PATH       = SDK_DEFAULT_PATH+"/Tools/Create RamDisk/SEFS/initrd/src/c/"
-SDK_INCLUDE_MK   = SDK_C_PATH+"/include.mk"
+SDK_C_PATH       = SDK_DEFAULT_PATH+"/libc/"
+SDK_INCLUDE_MK   = SDK_C_PATH+"/Makefile"
 
 SDK_CHANNELS = {
     'main': "https://github.com/pimnik98/SayoriSDK",
@@ -62,53 +63,56 @@ def update_sdk_if_needed():
 
     return error
 
-def parse_include_mk():
-    if not os.path.isfile(SDK_INCLUDE_MK):
-        log.warn("include.mk not found in SDK! SDK needs to be checked for updates...")
-        return {}
+def invoke_make():
+    process = sp.Popen(["make", "-sC", SDK_C_PATH, "ext_compiler"], stdout=sp.PIPE)
+    data = process.stdout.read().decode("utf-8").split("\n")
 
-    data = ""
-    with open(SDK_INCLUDE_MK, "r") as f:
-        data = f.read()
-        f.close()
+    flags = {}
 
-    return kvp.parse_key_value_file(data)
+    for i in data:
+        if i == "":
+            continue
+
+        key, *value = i.split(" ")
+        value = ' '.join(value)
+
+        flags[key] = value
+
+    return flags
 
 def compile_c(inputs, output, compiler=None, linker=None):
-    recipe = parse_include_mk()
+    recipe = invoke_make()
     cflags = recipe.get("CFLAGS")
-    ldflags = recipe.get("LDFLAGS")
+    libc = recipe.get("LIBC")
 
     if not cflags:
-        log.error("Failed to get CFLAGS from include.mk!")
+        log.error("Failed to get CFLAGS from make!")
         log.error("^- It may be corrupted")
     else:
         cflags = cflags.strip()
     
-    if not ldflags:
-        log.error("Failed to get LDFLAGS from include.mk!")
-        log.error("^- It may be corrupted")
-    else:
-        ldflags = ldflags.strip()
-    
     c = CCompiler(compiler)
     if not c.found:
         exit(1)
+    
     ld = Linker(linker)
     if not ld.found:
         exit(1)
+    
     cwd = os.getcwd()
 
-    objs = [cwd+"/"+i+".o" for i in inputs]
+    print(cflags)
+
+    objs = [cwd+"/"+i+".o" for i in inputs] 
 
     for i in inputs:
-        error = c.compile_file(i, cwd+"/"+i+".o", flags="-c "+cflags)
+        error = c.compile_file(i, cwd + "/" + i + ".o", flags="-c " + cflags + f" -I{SDK_C_PATH}/include")
         if error:
             for i in objs: os.remove(i)
             exit(1)
 
     os.chdir(SDK_C_PATH)
-    ld.link(objs, cwd+"/"+output, ldflags)
+    ld.link(objs + [SDK_C_PATH + "/" + libc], cwd+"/"+output, f"-T{SDK_C_PATH}/link.ld")
     os.chdir(cwd)
 
     for i in objs:
@@ -140,6 +144,8 @@ def main(args):
 
 def premain():
     log.success(f"SayoriSDK Compiler Wrapper v{VERSION} by NDRAEY (c) 2023")
+
+    print(invoke_make())
 
     argp = argparse.ArgumentParser(prog='sayori-cc')
     argp.add_argument("-c", "--channel", help="Select SayoriSDK channel")
