@@ -1,17 +1,19 @@
 # Code by NDRAEY (c) 2023
 
+import argparse
+import shutil
 import os
 from pathlib import Path
 import subprocess as sp
 
 try:
-    from c_compiler import CCompiler, GIT, log, argparse, shutil
+    from c_compiler import CCompiler, log
+    from git_utils import GIT
     from linker import Linker
-    import key_value_parser as kvp
-except:
-    from .c_compiler import CCompiler, GIT, log, argparse, shutil
+except Exception as _:
+    from .c_compiler import CCompiler, log
+    from git_utils import GIT
     from .linker import Linker
-    from . import key_value_parser as kvp
 
 VERSION = "1.0"
 
@@ -80,7 +82,7 @@ def invoke_make():
 
     return flags
 
-def compile_c(inputs, output, compiler=None, linker=None):
+def compile_c(inputs, output, compiler=None, linker=None, link=True):
     recipe = invoke_make()
     cflags = recipe.get("CFLAGS")
     libc = recipe.get("LIBC")
@@ -108,15 +110,17 @@ def compile_c(inputs, output, compiler=None, linker=None):
     for i in inputs:
         error = c.compile_file(i, cwd + "/" + i + ".o", flags="-c " + cflags + f" -I{SDK_C_PATH}/include")
         if error:
-            for i in objs: os.remove(i)
+            for i in objs:
+                os.remove(i)
             exit(1)
 
-    os.chdir(SDK_C_PATH)
-    ld.link(objs + [SDK_C_PATH + "/" + libc], cwd+"/"+output, f"-T{SDK_C_PATH}/link.ld")
-    os.chdir(cwd)
+    if link:
+        os.chdir(SDK_C_PATH)
+        ld.link(objs + [SDK_C_PATH + "/" + libc], cwd+"/"+output, f"-T{SDK_C_PATH}/link.ld")
+        os.chdir(cwd)
 
-    for i in objs:
-        os.remove(i)
+        for i in objs:
+            os.remove(i)
 
 def main(args):
     if not args.files:
@@ -140,7 +144,7 @@ def main(args):
     if not args.files:
         exit(0)
 
-    compile_c(args.files, args.output, args.compiler, args.linker)
+    compile_c(args.files, args.output, args.compiler, args.linker, link=not args.c)
 
 def premain():
     log.success(f"SayoriSDK Compiler Wrapper v{VERSION} by NDRAEY (c) 2023")
@@ -148,14 +152,15 @@ def premain():
     print(invoke_make())
 
     argp = argparse.ArgumentParser(prog='sayori-cc')
-    argp.add_argument("-c", "--channel", help="Select SayoriSDK channel")
+    argp.add_argument("--channel", help="Select SayoriSDK channel")
+    argp.add_argument("-c", action='store_true', help="Compile into object file only")
     argp.add_argument("-p", "--compiler", help="Select compiler to use for this session")
     argp.add_argument("-l", "--linker", help="Select linker to use for this session")
     argp.add_argument("-o", "--output", help="Output to file")
     argp.add_argument("-d", "--download", action='store_true',
                       help='''Force download SayoriSDK
                               (overwrites current channel)
-                              (Useful when you want download channel or re-download current)
+                              (Useful when you want download another channel or re-download current)
                            '''
     )
     argp.add_argument("--remove", action='store_true', help="Remove SayoriSDK")
@@ -165,7 +170,10 @@ def premain():
 
     args = argp.parse_args()
 
+    print(args)
+
     main(args)
 
 if __name__=="__main__":
     premain()
+

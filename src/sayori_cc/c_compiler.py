@@ -1,6 +1,5 @@
 # Code by NDRAEY (c) 2023
 
-import argparse
 import shutil
 import os
 import subprocess as sp
@@ -8,10 +7,8 @@ from colorama import Fore
 
 # internal
 try:
-    from git_utils import GIT
     import colored_out as log
 except:
-    from .git_utils import GIT
     from . import colored_out as log
 
 class CCompiler:
@@ -29,13 +26,14 @@ class CCompiler:
         if not compiler:
             for i in self.__supported:
                 self.__path = shutil.which(i)
-                if self.__path is not None: break
+                if self.__path is not None:
+                    break
 
-            if self.__path == None:
+            if self.__path is None:
                 log.error("No suitable compiler found!")
                 log.info("Tried: ")
                 for i in self.__supported:
-                    info("^-", i)
+                    log.info("^-", i)
             else:
                 self.found = True
                 log.success("Found compiler:", self.__path.split("/")[-1], "["+self.__parse_compiler_version()+"]")
@@ -59,24 +57,12 @@ class CCompiler:
     def compile_file(self, infile, outfile, flags=""):
         if not os.path.isfile(infile):
             log.error("File", infile, "was not found!")
-            return
-        log.check("Compiling", Fore.GREEN+infile+Fore.RESET)
+            return 1
+
+        log.check("Compiling", Fore.GREEN + infile + Fore.RESET)
+        
         code = sp.call([
             self.__path, infile, *(flags.split(" ")), "-o", outfile
-        ], stdout=sp.PIPE)
-
-        if code:  # Non-zero code indicates an error
-            log.error("Failed to compile:", infile)
-
-        return code
-
-    def compile_files(self, infiles, outfile, flags=""):
-        if not os.path.isfile(infile):
-            log.error("File", infile, "was not found!")
-            return
-        log.check("Compiling", Fore.GREEN+infile+Fore.RESET)
-        code = sp.call([
-            self.__path, *infiles, *(flags.split(" ")), "-o", outfile
         ], stdout=sp.PIPE)
 
         if code:  # Non-zero code indicates an error
