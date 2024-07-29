@@ -8,7 +8,7 @@ from colorama import Fore
 # internal
 try:
     import colored_out as log
-except:
+except Exception as _:
     from . import colored_out as log
 
 class CCompiler:

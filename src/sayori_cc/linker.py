@@ -7,7 +7,7 @@ from colorama import Fore
 
 try:
     import colored_out as log
-except:
+except Exception as _:
     from . import colored_out as log
 
 class Linker:

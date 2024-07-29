@@ -4,12 +4,17 @@ import subprocess as sp
 import shutil
 import os
 
+try:
+    import log
+except Exception as _:
+    from . import log
+
 class GIT:
     def __init__(self):
         self.__path = shutil.which("git")
 
         if not self.__path:
-            error("Git was not found!")
+            log.error("Git was not found!")
             return
 
     def clone(self, remote_repo, destination=None, depth=None):
@@ -38,7 +43,3 @@ class GIT:
 
         return res
 
-'''
-git = GIT()
-git.clone("https://github.com/pimnik98/SayoriOS", depth=1)
-'''
